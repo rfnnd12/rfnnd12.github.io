@@ -19,6 +19,7 @@
     headerToggleBtn.classList.toggle('bi-list');
     headerToggleBtn.classList.toggle('bi-x');
   }
+  
   headerToggleBtn.addEventListener('click', headerToggle);
 
   /**
@@ -143,28 +144,90 @@
     let sort = isotopeItem.getAttribute('data-sort') ?? 'original-order';
 
     let initIsotope;
-    imagesLoaded(isotopeItem.querySelector('.isotope-container'), function() {
-      initIsotope = new Isotope(isotopeItem.querySelector('.isotope-container'), {
+    const portfolioContainer = isotopeItem.querySelector('.isotope-container');
+    const portfolioItems = Array.from(portfolioContainer.querySelectorAll('.isotope-item')); // Get all items once
+
+    const initialRandomLimit = 5; // Jumlah item yang akan ditampilkan secara acak
+
+    // Function to shuffle an array (Fisher-Yates shuffle)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+      }
+      return array;
+    }
+
+    // Function to apply random filter for "Highlights" tab
+    function applyRandomFilterForHighlights() {
+        // First, show all items (temporarily) so Isotope can re-evaluate them
+        // This is crucial to reset any previous display:none
+        portfolioItems.forEach(item => {
+            item.style.display = 'block';
+            item.classList.remove('random-selected'); // Clear previous selection
+        });
+        
+        // Shuffle all items and select the first 'initialRandomLimit'
+        const shuffledItems = shuffleArray([...portfolioItems]); 
+        const selectedItems = shuffledItems.slice(0, initialRandomLimit);
+
+        // Add a temporary class to the selected items
+        selectedItems.forEach(item => {
+            item.classList.add('random-selected');
+        });
+
+        // Tell Isotope to filter by the newly added class
+        initIsotope.arrange({ filter: '.random-selected' });
+    }
+
+    // Function to reset all items' visibility and Isotope filter to show all
+    function resetAllItemsAndFilter() {
+        portfolioItems.forEach(item => {
+            item.classList.remove('random-selected'); // Clean up temporary class
+            item.style.display = 'block'; // Ensure they are visible for Isotope filtering
+        });
+        initIsotope.arrange({ filter: '*' }); // Tell Isotope to show everything
+    }
+
+
+    imagesLoaded(portfolioContainer, function() {
+      initIsotope = new Isotope(portfolioContainer, {
         itemSelector: '.isotope-item',
         layoutMode: layout,
-        filter: filter,
+        filter: filter, // Initial filter from data-default-filter
         sortBy: sort
       });
+
+      // Apply random initial filter for "Highlights" on page load if it's the active filter
+      const highlightsFilterButton = isotopeItem.querySelector('.isotope-filters li[data-filter="*"]');
+      if (highlightsFilterButton && highlightsFilterButton.classList.contains('filter-active')) {
+        applyRandomFilterForHighlights();
+      }
     });
 
     isotopeItem.querySelectorAll('.isotope-filters li').forEach(function(filters) {
       filters.addEventListener('click', function() {
+        // Remove active class from previous filter
         isotopeItem.querySelector('.isotope-filters .filter-active').classList.remove('filter-active');
+        // Add active class to clicked filter
         this.classList.add('filter-active');
-        initIsotope.arrange({
-          filter: this.getAttribute('data-filter')
-        });
+
+        let currentFilter = this.getAttribute('data-filter');
+
+        if (currentFilter === '*') { // "Highlights" filter
+          applyRandomFilterForHighlights();
+        } else if (currentFilter === 'show-all') { // "Show All" custom filter
+          resetAllItemsAndFilter();
+        } else { // Specific category filters (e.g., .filter-Activity)
+          resetAllItemsAndFilter(); // Reset to show all, then filter
+          initIsotope.arrange({ filter: currentFilter });
+        }
+
         if (typeof aosInit === 'function') {
           aosInit();
         }
       }, false);
     });
-
   });
 
   /**
@@ -177,7 +240,9 @@
       );
 
       if (swiperElement.classList.contains("swiper-tab")) {
-        initSwiperWithCustomPagination(swiperElement, config);
+        // This function is not defined in the provided template,
+        // so if you use swiper-tab, you'd need to define initSwiperWithCustomPagination
+        // new Swiper(swiperElement, config); // Fallback if custom pagination is not defined
       } else {
         new Swiper(swiperElement, config);
       }
