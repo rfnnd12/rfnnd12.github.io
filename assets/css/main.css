@@ -791,7 +791,30 @@ section,
   transition: all 0.3s ease-in-out;
   font-family: var(--heading-font);
 }
+#project-spotlight {
+  background: linear-gradient(45deg, #0d6efd, #00d2ff) !important;
+  color: white !important;
+  border: none !important;
+  position: relative;
+  animation: pulse-blue 2s infinite;
+  box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+  font-weight: 600;
+  padding-left: 25px;
+  padding-right: 25px;
+}
 
+@keyframes pulse-blue {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(13, 110, 253, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
+}
+
+/* Tambahkan icon kecil biar makin menarik */
+#project-spotlight::before {
+  content: "\f23a"; /* Icon folder/code dari bootstrap-icons */
+  font-family: "bootstrap-icons";
+  margin-right: 8px;
+}
 .portfolio .portfolio-filters li:hover,
 .portfolio .portfolio-filters li.filter-active {
   color: var(--contrast-color);
